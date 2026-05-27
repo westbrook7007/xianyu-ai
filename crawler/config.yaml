@@ -1,0 +1,15 @@
+# 爬虫配置 - 可自定义
+crawl:
+  min_items: 20
+  max_items: 30
+  interval_seconds: 30
+  search_url: "https://www.goofish.com/search?q={keyword}&sort=new"
+
+browser:
+  headless: false  # 首次登录设为 false，登录后可改 true
+  profile_dir: "./browser_profile"
+  channel: "chrome"
+
+server:
+  host: "0.0.0.0"
+  port: 8080

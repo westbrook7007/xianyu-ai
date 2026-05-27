@@ -1,0 +1,11 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+.tools/
+crawler/browser_profile/
+crawler/debug/
+crawler/__pycache__/
+*.pyc
+.DS_Store
