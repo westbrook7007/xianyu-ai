@@ -1,4 +1,18 @@
 export const USER_ID_KEY = "xianyu_ai_user_id";
+const NOTIFY_KEY = "xianyu_notify_settings";
+
+export interface NotifySettings {
+  email: string;
+  enabled: boolean;
+  /** 后台爬取，完成后邮件通知（适合耗时较长的任务） */
+  backgroundNotify: boolean;
+}
+
+const DEFAULT_NOTIFY: NotifySettings = {
+  email: "",
+  enabled: false,
+  backgroundNotify: true,
+};
 
 export function getUserId(): string {
   if (typeof window === "undefined") return "server";
@@ -22,4 +36,20 @@ export function loadPreferenceTemplate<T>(): T | null {
   } catch {
     return null;
   }
+}
+
+export function loadNotifySettings(): NotifySettings {
+  if (typeof window === "undefined") return DEFAULT_NOTIFY;
+  try {
+    const raw = localStorage.getItem(NOTIFY_KEY);
+    if (!raw) return DEFAULT_NOTIFY;
+    return { ...DEFAULT_NOTIFY, ...JSON.parse(raw) };
+  } catch {
+    return DEFAULT_NOTIFY;
+  }
+}
+
+export function saveNotifySettings(settings: NotifySettings): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(NOTIFY_KEY, JSON.stringify(settings));
 }

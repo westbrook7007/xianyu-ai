@@ -15,7 +15,7 @@ from rpa_browser import crawl_keyword, load_config
 
 load_dotenv()
 
-CRAWLER_VERSION = "2.2"
+CRAWLER_VERSION = "6.6"
 app = Flask(__name__)
 API_SECRET = os.getenv("CRAWL_API_SECRET", "change-me")
 

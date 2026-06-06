@@ -28,7 +28,7 @@ export default function Header() {
               key={item.href}
               href={item.href}
               className={clsx(
-                "rounded-lg px-3 py-2 text-sm font-medium transition",
+                "type-nav rounded-lg px-3 py-2 transition",
                 pathname === item.href
                   ? "bg-brand-100 text-brand-700"
                   : "text-gray-600 hover:bg-orange-50"

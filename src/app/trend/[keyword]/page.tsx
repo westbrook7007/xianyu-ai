@@ -38,8 +38,8 @@ function TrendContent() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{keyword}</h1>
-        <p className="text-gray-500">价格波动分析 & 入手建议</p>
+        <h1 className="type-page-title">{keyword}</h1>
+        <p className="type-subtitle">价格波动分析 & 入手建议</p>
       </div>
 
       {stats && (
@@ -53,24 +53,24 @@ function TrendContent() {
 
       <div className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold">价格走势</h2>
+          <h2 className="type-section-title">价格走势</h2>
           <div className="flex gap-2">
             <button
               onClick={() => setDays(7)}
-              className={`rounded-lg px-3 py-1 text-sm ${days === 7 ? "bg-brand-100 text-brand-700" : "text-gray-500"}`}
+              className={`type-body rounded-lg px-3 py-1 ${days === 7 ? "bg-brand-100 text-brand-700" : "text-gray-500"}`}
             >
               7日
             </button>
             <button
               onClick={() => setDays(30)}
-              className={`rounded-lg px-3 py-1 text-sm ${days === 30 ? "bg-brand-100 text-brand-700" : "text-gray-500"}`}
+              className={`type-body rounded-lg px-3 py-1 ${days === 30 ? "bg-brand-100 text-brand-700" : "text-gray-500"}`}
             >
               30日
             </button>
           </div>
         </div>
         <PriceChart data={trends} days={days} />
-        <div className="mt-2 flex gap-4 text-xs text-gray-400">
+        <div className="type-caption mt-2 flex gap-4">
           <span className="flex items-center gap-1"><span className="inline-block h-0.5 w-4 bg-orange-500" /> 均价</span>
           <span className="flex items-center gap-1"><span className="inline-block h-0.5 w-4 bg-green-500" /> 最低价</span>
           <span className="flex items-center gap-1"><span className="inline-block h-0.5 w-4 bg-red-500" /> 最高价</span>
@@ -78,9 +78,9 @@ function TrendContent() {
       </div>
 
       <div className="rounded-2xl border border-green-100 bg-green-50 p-6">
-        <h3 className="mb-2 font-semibold text-green-800">入手建议</h3>
-        <p className="text-green-700">{position}</p>
-        <p className="mt-2 text-sm text-green-600">
+        <h3 className="type-card-title mb-2 text-green-800">入手建议</h3>
+        <p className="type-body text-green-700">{position}</p>
+        <p className="type-caption mt-2 text-green-600">
           当价格 ≤ 30日均价 80% 时触发「优质好价」提醒；等于 30 日史低时触发「史低入手」强提醒。
         </p>
       </div>
@@ -91,8 +91,8 @@ function TrendContent() {
 function StatCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className={`rounded-xl border p-4 ${highlight ? "border-green-200 bg-green-50" : "border-orange-100 bg-white"}`}>
-      <div className="text-sm text-gray-500">{label}</div>
-      <div className={`text-xl font-bold ${highlight ? "text-green-600" : "text-gray-900"}`}>{value}</div>
+      <div className="type-stat-label">{label}</div>
+      <div className={`type-stat-value ${highlight ? "text-green-600" : ""}`}>{value}</div>
     </div>
   );
 }

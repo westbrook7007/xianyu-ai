@@ -32,8 +32,8 @@ export default function FeatureSection() {
           className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:shadow-md"
         >
           <f.icon className="mb-3 h-8 w-8 text-brand-500" />
-          <h3 className="font-semibold text-gray-900">{f.title}</h3>
-          <p className="mt-1 text-sm text-gray-500">{f.desc}</p>
+          <h3 className="type-card-title">{f.title}</h3>
+          <p className="type-caption mt-1">{f.desc}</p>
         </div>
       ))}
     </section>

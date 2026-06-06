@@ -4,6 +4,14 @@ const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
+      fontSize: {
+        caption: ["0.75rem", { lineHeight: "1.5" }],
+        body: ["0.875rem", { lineHeight: "1.6" }],
+        lead: ["1rem", { lineHeight: "1.6" }],
+        title: ["1.125rem", { lineHeight: "1.4" }],
+        page: ["1.5rem", { lineHeight: "1.35" }],
+        hero: ["1.875rem", { lineHeight: "1.25" }],
+      },
       colors: {
         brand: {
           50: "#fff7ed",

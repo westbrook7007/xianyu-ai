@@ -3,6 +3,8 @@ node_modules/
 out/
 .env
 .env.local
+.crawl-cache/
+tsconfig.tsbuildinfo
 .tools/
 crawler/browser_profile/
 crawler/debug/

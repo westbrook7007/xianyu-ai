@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { MOCK_PRODUCTS } from "@/lib/mock-data";
 import { scoreProduct, classifySeller, getPricePosition } from "@/lib/scoring";
-import type { Product, UserPreference } from "@/lib/types";
+import { sortProducts } from "@/lib/filter-products";
+import type { Product, SortMode, UserPreference } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
   const keyword = req.nextUrl.searchParams.get("keyword") || "";
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
     if (personalOnly) items = items.filter((p) => p.seller_type === 1 && p.seller_label?.includes("个人"));
     if (withService) items = items.filter((p) => p.service);
     items = items.filter((p) => p.price >= minPrice && p.price <= maxPrice);
-    items = sortProducts(items, sort);
+    items = sortProducts(items, sort as SortMode);
     return NextResponse.json({ products: items, demo: true });
   }
 
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
   const { data, error } = await query.order("ai_score", { ascending: false }).limit(50);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const products = sortProducts((data || []) as Product[], sort);
+  const products = sortProducts((data || []) as Product[], sort as SortMode);
   return NextResponse.json({ products, demo: false });
 }
 
@@ -113,18 +114,3 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ saved: enriched.length, demo: false, products: enriched });
 }
 
-function sortProducts(items: Product[], sort: string): Product[] {
-  const copy = [...items];
-  switch (sort) {
-    case "price_low":
-      return copy.sort((a, b) => a.price - b.price);
-    case "quality_best":
-      return copy.sort((a, b) => (a.life_level || 0) - (b.life_level || 0)).reverse();
-    case "life_longest":
-      return copy.sort((a, b) => (b.life_level || 0) - (a.life_level || 0));
-    case "value":
-      return copy.sort((a, b) => b.price / (b.ai_score || 1) - a.price / (a.ai_score || 1));
-    default:
-      return copy.sort((a, b) => (b.ai_score || 0) - (a.ai_score || 0));
-  }
-}

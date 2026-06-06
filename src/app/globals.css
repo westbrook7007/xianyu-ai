@@ -11,10 +11,71 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  @apply text-body text-gray-800;
+}
+
+@layer base {
+  h1 {
+    @apply text-page font-bold text-gray-900;
+  }
+  h2 {
+    @apply text-title font-semibold text-gray-900;
+  }
+  h3 {
+    @apply text-lead font-medium text-gray-900;
+  }
+}
+
+@layer components {
+  .type-hero {
+    @apply text-hero font-bold tracking-tight text-gray-900 md:text-[2.125rem];
+  }
+  .type-page-title {
+    @apply text-page font-bold text-gray-900;
+  }
+  .type-section-title {
+    @apply text-title font-semibold text-gray-900;
+  }
+  .type-card-title {
+    @apply text-lead font-semibold text-gray-900;
+  }
+  .type-subtitle {
+    @apply text-body text-gray-500;
+  }
+  .type-body {
+    @apply text-body text-gray-700;
+  }
+  .type-caption {
+    @apply text-caption text-gray-500;
+  }
+  .type-label {
+    @apply text-body font-medium text-gray-800;
+  }
+  .type-input {
+    @apply text-body;
+  }
+  .type-search {
+    @apply text-lead;
+  }
+  .type-price {
+    @apply text-title font-bold text-brand-600;
+  }
+  .type-stat-value {
+    @apply text-lead font-bold text-gray-900;
+  }
+  .type-stat-label {
+    @apply text-body text-gray-500;
+  }
+  .type-nav {
+    @apply text-body font-medium;
+  }
+  .type-badge {
+    @apply text-caption font-medium;
+  }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+    @apply border border-white/20 bg-white/80 shadow-lg backdrop-blur-md;
   }
 }

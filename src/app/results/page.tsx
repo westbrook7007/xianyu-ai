@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import type { Product, SortMode } from "@/lib/types";
+import { applyProductView } from "@/lib/filter-products";
+import { getUserId } from "@/lib/user";
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "ai_score", label: "AI综合分" },
@@ -14,10 +16,14 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "value", label: "性价比最高" },
 ];
 
+function productKey(p: Product, index: number): string {
+  return p.product_url?.match(/id=(\d+)/)?.[1] || String(p.id || index);
+}
+
 function ResultsContent() {
   const searchParams = useSearchParams();
   const keyword = searchParams.get("keyword") || "";
-  const [products, setProducts] = useState<Product[]>([]);
+  const [rawProducts, setRawProducts] = useState<Product[]>([]);
   const [sort, setSort] = useState<SortMode>("ai_score");
   const [hideFiltered, setHideFiltered] = useState(true);
   const [personalOnly, setPersonalOnly] = useState(false);
@@ -26,35 +32,57 @@ function ResultsContent() {
   const [demo, setDemo] = useState(false);
   const [crawlStatus, setCrawlStatus] = useState<string>("");
 
+  const products = applyProductView(rawProducts, {
+    sort,
+    hideFiltered,
+    personalOnly,
+    withService,
+  });
+
   useEffect(() => {
     loadProducts();
-  }, [keyword, sort, hideFiltered, personalOnly, withService]);
+  }, [keyword]);
 
   async function loadProducts() {
     setLoading(true);
     const kw = keyword || sessionStorage.getItem("last_keyword") || "";
 
-    // 优先显示刚爬取到的缓存（真实数据）
     const cached = sessionStorage.getItem("last_products");
     const cachedKw = sessionStorage.getItem("last_keyword") || "";
     if (cached && kw && cachedKw.toLowerCase() === kw.toLowerCase()) {
-      setProducts(JSON.parse(cached));
+      setRawProducts(JSON.parse(cached) as Product[]);
       setDemo(sessionStorage.getItem("last_crawl_status") === "demo");
       setCrawlStatus(sessionStorage.getItem("last_crawl_status") || "");
       setLoading(false);
       return;
     }
 
+    if (kw) {
+      const cacheRes = await fetch(
+        `/api/crawl/results?userId=${encodeURIComponent(getUserId())}&keyword=${encodeURIComponent(kw)}`
+      );
+      const cacheData = await cacheRes.json();
+      if (cacheData.products?.length) {
+        setRawProducts(cacheData.products);
+        setDemo(cacheData.status === "demo");
+        setCrawlStatus(cacheData.status || "");
+        sessionStorage.setItem("last_products", JSON.stringify(cacheData.products));
+        sessionStorage.setItem("last_keyword", kw);
+        setLoading(false);
+        return;
+      }
+    }
+
     const params = new URLSearchParams({
       keyword: kw,
-      sort,
-      hideFiltered: String(hideFiltered),
-      personalOnly: String(personalOnly),
-      withService: String(withService),
+      sort: "ai_score",
+      hideFiltered: "false",
+      personalOnly: "false",
+      withService: "false",
     });
     const res = await fetch(`/api/products?${params}`);
     const data = await res.json();
-    setProducts(data.products || []);
+    setRawProducts(data.products || []);
     setDemo(data.demo);
     setCrawlStatus("");
     setLoading(false);
@@ -66,53 +94,56 @@ function ResultsContent() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">选品结果</h1>
-          <p className="text-gray-500">
+          <h1 className="type-page-title">选品结果</h1>
+          <p className="type-subtitle">
             关键词: {kw || "—"}
-            {demo && <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">演示数据</span>}
+            {products.length > 0 && (
+              <span className="ml-2 text-gray-400">共 {products.length} 条</span>
+            )}
+            {demo && <span className="type-badge ml-2 rounded bg-amber-100 px-2 py-0.5 text-amber-700">演示数据</span>}
           </p>
         </div>
         {kw && (
-          <Link href={`/trend/${encodeURIComponent(kw)}`} className="text-brand-600 hover:underline">
+          <Link href={`/trend/${encodeURIComponent(kw)}`} className="type-body text-brand-600 hover:underline">
             查看价格走势 →
           </Link>
         )}
       </div>
 
       <div className="flex flex-wrap gap-3 rounded-xl border border-orange-100 bg-white p-4">
-        <select value={sort} onChange={(e) => setSort(e.target.value as SortMode)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
+        <select value={sort} onChange={(e) => setSort(e.target.value as SortMode)} className="type-input rounded-lg border border-gray-200 px-3 py-2">
           {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>排序: {o.label}</option>
           ))}
         </select>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="type-body flex items-center gap-2">
           <input type="checkbox" checked={hideFiltered} onChange={(e) => setHideFiltered(e.target.checked)} />
           隐藏已过滤黄牛
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="type-body flex items-center gap-2">
           <input type="checkbox" checked={personalOnly} onChange={(e) => setPersonalOnly(e.target.checked)} />
           仅个人卖家
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="type-body flex items-center gap-2">
           <input type="checkbox" checked={withService} onChange={(e) => setWithService(e.target.checked)} />
           带增值服务
         </label>
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-gray-400">加载中...</div>
+        <div className="type-caption py-12 text-center">加载中...</div>
       ) : products.length === 0 ? (
         <div className="py-12 text-center">
-          <p className="text-gray-500">暂无商品数据</p>
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="type-subtitle">暂无商品数据</p>
+          <p className="type-caption mt-2">
             登录闲鱼后不会自动爬取，需要回首页重新搜索并点「启动爬取」
           </p>
           <div className="mt-4 flex justify-center gap-3">
-            <Link href="/" className="rounded-lg bg-brand-500 px-4 py-2 text-sm text-white hover:bg-brand-600">
+            <Link href="/" className="type-body rounded-lg bg-brand-500 px-4 py-2 text-white hover:bg-brand-600">
               回首页重新搜索
             </Link>
             {kw && (
-              <Link href={`/preferences?keyword=${encodeURIComponent(kw)}`} className="rounded-lg border border-brand-300 px-4 py-2 text-sm text-brand-600 hover:bg-orange-50">
+              <Link href={`/preferences?keyword=${encodeURIComponent(kw)}`} className="type-body rounded-lg border border-brand-300 px-4 py-2 text-brand-600 hover:bg-orange-50">
                 重新爬取「{kw}」
               </Link>
             )}
@@ -120,8 +151,8 @@ function ResultsContent() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {products.map((p) => (
-            <ProductCard key={p.product_url || p.id} product={p} />
+          {products.map((p, i) => (
+            <ProductCard key={productKey(p, i)} product={p} />
           ))}
         </div>
       )}

@@ -32,26 +32,26 @@ export default function ProductCard({ product }: { product: Product }) {
     >
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-wrap gap-2">
-          <span className={clsx("rounded-full px-2.5 py-0.5 text-xs font-medium", LABEL_STYLE[label] || "bg-gray-100")}>
+          <span className={clsx("type-badge rounded-full px-2.5 py-0.5", LABEL_STYLE[label] || "bg-gray-100")}>
             {label}
           </span>
           {product.price_position && (
-            <span className={clsx("rounded-full px-2.5 py-0.5 text-xs font-medium", POSITION_STYLE[product.price_position])}>
+            <span className={clsx("type-badge rounded-full px-2.5 py-0.5", POSITION_STYLE[product.price_position])}>
               {product.price_position}
             </span>
           )}
         </div>
         {!product.is_filtered && (
           <div className="text-right">
-            <div className="text-2xl font-bold text-brand-600">¥{product.price}</div>
-            <div className="text-xs text-gray-400">AI适配分 {product.ai_score}</div>
+            <div className="type-price">¥{product.price}</div>
+            <div className="type-caption">AI适配分 {product.ai_score}</div>
           </div>
         )}
       </div>
 
-      <h3 className="mb-2 line-clamp-2 font-medium text-gray-900">{product.title}</h3>
+      <h3 className="type-card-title mb-2 line-clamp-2">{product.title}</h3>
 
-      <div className="mb-3 flex flex-wrap gap-3 text-sm text-gray-500">
+      <div className="type-body mb-3 flex flex-wrap gap-3 text-gray-500">
         {product.quality && <span>成色: {product.quality}</span>}
         <span className="flex items-center gap-0.5">
           寿命: {Array.from({ length: product.life_level || 3 }).map((_, i) => (
@@ -61,7 +61,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {product.service && <span className="text-green-600">✓ {product.service}</span>}
       </div>
 
-      <div className="flex items-center justify-between text-sm">
+      <div className="type-body flex items-center justify-between">
         <span className="text-gray-400">信用: {product.seller_level || "未知"}</span>
         {!product.is_filtered && goofishLink && (
           <a

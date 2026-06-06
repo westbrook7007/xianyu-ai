@@ -31,8 +31,8 @@ export default function PriceChart({ data, days = 30 }: Props) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={(v) => v.slice(5)} />
-          <YAxis tick={{ fontSize: 11 }} domain={["auto", "auto"]} />
+          <XAxis dataKey="date" tick={{ fontSize: 12 }} tickFormatter={(v) => v.slice(5)} />
+          <YAxis tick={{ fontSize: 12 }} domain={["auto", "auto"]} />
           <Tooltip
             formatter={(value: number) => [`¥${value}`, ""]}
             labelFormatter={(label) => `日期: ${label}`}
