@@ -20,5 +20,8 @@ echo.
 echo 关闭本窗口 = 停止 Worker
 echo.
 
+echo 检查依赖...
+"%PY%" -m pip install -r requirements.txt -q
+
 "%PY%" queue_worker.py
 pause
