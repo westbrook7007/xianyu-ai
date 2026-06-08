@@ -2,6 +2,33 @@ import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { scoreProduct, classifySeller, getPricePosition } from "@/lib/scoring";
 import type { Product, UserPreference } from "@/lib/types";
 
+/** 与 supabase/schema.sql 中 product_data 列一致，避免写入 UI 专用字段导致 upsert 失败 */
+function toProductRow(p: Product) {
+  return {
+    keyword: p.keyword,
+    title: p.title,
+    price: p.price,
+    original_price: p.original_price ?? null,
+    avg_price: p.avg_price ?? null,
+    quality: p.quality ?? null,
+    service: p.service ?? null,
+    service_day: p.service_day ?? 0,
+    seller_id: p.seller_id ?? null,
+    seller_level: p.seller_level ?? null,
+    seller_bio: p.seller_bio ?? null,
+    seller_item_count: p.seller_item_count ?? 0,
+    seller_type: p.seller_type,
+    life_level: p.life_level,
+    ai_score: p.ai_score,
+    flaw_desc: p.flaw_desc ?? null,
+    description: p.description ?? null,
+    publish_time: p.publish_time ?? null,
+    product_url: p.product_url,
+    is_filtered: p.is_filtered ?? false,
+    price_position: p.price_position ?? null,
+  };
+}
+
 export function buildEnrichedProducts(
   products: Partial<Product>[],
   keyword: string,
@@ -60,7 +87,7 @@ export async function saveProductsToDb(
   const avgPrice = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
 
   const { error } = await db.from("product_data").upsert(
-    products.map(({ seller_label: _sl, ...rest }) => rest),
+    products.map(toProductRow),
     { onConflict: "product_url" }
   );
   if (error) throw new Error(error.message);
