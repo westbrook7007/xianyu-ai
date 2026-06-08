@@ -13,7 +13,7 @@ export type ServiceDemand =
 
 export type SellerPreference = "excellent_only" | "allow_normal";
 
-export type Category = "digital" | "appliance" | "trendy" | "general";
+export type Category = "phone" | "drone" | "sneaker";
 
 export type SortMode =
   | "ai_score"
@@ -62,6 +62,10 @@ export interface Product {
   is_filtered?: boolean;
   price_position?: string;
   seller_label?: string;
+  spec_label?: string;
+  spec_matched?: boolean;
+  seller_bad_reviews?: number;
+  seller_review_note?: string;
 }
 
 export interface PriceTrendPoint {

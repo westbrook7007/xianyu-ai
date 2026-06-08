@@ -9,7 +9,7 @@ import { applyProductView } from "@/lib/filter-products";
 import { getUserId } from "@/lib/user";
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
-  { value: "ai_score", label: "AI综合分" },
+  { value: "ai_score", label: "性价比分" },
   { value: "price_low", label: "价格最低" },
   { value: "quality_best", label: "成色最优" },
   { value: "life_longest", label: "寿命最长" },
@@ -89,12 +89,23 @@ function ResultsContent() {
   }
 
   const kw = keyword || (typeof window !== "undefined" ? sessionStorage.getItem("last_keyword") : "") || "";
+  const isEmpty = !loading && products.length === 0;
+
+  if (isEmpty) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <p className="type-page-title text-center text-gray-600">
+          小助手没有找到你想要的宝贝
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="type-page-title">选品结果</h1>
+          <h1 className="type-page-title">比价结果</h1>
           <p className="type-subtitle">
             关键词: {kw || "—"}
             {products.length > 0 && (
@@ -132,25 +143,8 @@ function ResultsContent() {
 
       {loading ? (
         <div className="type-caption py-12 text-center">加载中...</div>
-      ) : products.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="type-subtitle">暂无商品数据</p>
-          <p className="type-caption mt-2">
-            登录闲鱼后不会自动爬取，需要回首页重新搜索并点「启动爬取」
-          </p>
-          <div className="mt-4 flex justify-center gap-3">
-            <Link href="/" className="type-body rounded-lg bg-brand-500 px-4 py-2 text-white hover:bg-brand-600">
-              回首页重新搜索
-            </Link>
-            {kw && (
-              <Link href={`/preferences?keyword=${encodeURIComponent(kw)}`} className="type-body rounded-lg border border-brand-300 px-4 py-2 text-brand-600 hover:bg-orange-50">
-                重新爬取「{kw}」
-              </Link>
-            )}
-          </div>
-        </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid items-stretch gap-4 md:grid-cols-2">
           {products.map((p, i) => (
             <ProductCard key={productKey(p, i)} product={p} />
           ))}

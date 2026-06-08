@@ -6,6 +6,13 @@ import { executeCrawl } from "@/lib/run-crawl";
 import { saveCrawlResults } from "@/lib/crawl-cache";
 import { sendCrawlResultEmail } from "@/lib/crawl-email";
 import { isEmailConfigured } from "@/lib/email";
+import { getCrawlMetrics } from "@/lib/crawl-metrics";
+import {
+  checkManualCrawlLimit,
+  enqueueCrawlJob,
+  isQueueEnabled,
+  shouldUseQueue,
+} from "@/lib/crawl-queue";
 import type { UserPreference } from "@/lib/types";
 
 async function persistAndNotify(
@@ -66,20 +73,41 @@ export async function POST(req: NextRequest) {
   }
 
   if (isSupabaseConfigured() && userId && triggerType === "manual") {
-    const db = getSupabaseAdmin()!;
-    const today = new Date().toISOString().slice(0, 10);
-    const { count } = await db
-      .from("crawl_logs")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("trigger_type", "manual")
-      .gte("create_time", today);
-
-    if ((count || 0) >= CONFIG.crawl.maxManualPerDay) {
+    const allowed = await checkManualCrawlLimit(userId);
+    if (!allowed) {
       return NextResponse.json(
         { error: `今日手动爬取已达上限（${CONFIG.crawl.maxManualPerDay}次）` },
         { status: 429 }
       );
+    }
+  }
+
+  // 远程模式：Vercel 无本机爬虫 → 写入 Supabase 队列，由本机 Worker 执行
+  if (shouldUseQueue()) {
+    if (!userId) {
+      return NextResponse.json({ error: "缺少 userId" }, { status: 400 });
+    }
+    try {
+      const { job, queuePosition } = await enqueueCrawlJob({
+        userId,
+        keyword,
+        preference,
+        notifyEmail: email,
+      });
+      return NextResponse.json({
+        status: "queued",
+        jobId: job.id,
+        message:
+          queuePosition > 1
+            ? `已提交排队，当前第 ${queuePosition} 位，请保持运营者电脑在线`
+            : "已提交，正在等待本机爬取（请保持运营者电脑与爬虫在线）",
+        queuePosition,
+        estimatedWaitMinutes: Math.max(3, queuePosition * 5),
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "提交队列失败";
+      const status = msg.includes("繁忙") ? 503 : 400;
+      return NextResponse.json({ error: msg }, { status });
     }
   }
 
@@ -158,6 +186,9 @@ export async function GET() {
     config: CONFIG.crawl,
     crawlerConfigured: !!process.env.CRAWLER_ENDPOINT,
     supabaseConfigured: isSupabaseConfigured(),
+    queueEnabled: isQueueEnabled(),
+    remoteQueueMode: shouldUseQueue(),
     emailConfigured: isEmailConfigured(),
+    metrics: getCrawlMetrics().summary,
   });
 }

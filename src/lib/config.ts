@@ -56,8 +56,19 @@ export const SELLER_OPTIONS = [
 ] as const;
 
 export const CATEGORY_OPTIONS = [
-  { value: "digital", label: "数码产品" },
-  { value: "appliance", label: "家电" },
-  { value: "trendy", label: "潮玩" },
-  { value: "general", label: "通用" },
+  { value: "phone", label: "手机" },
+  { value: "drone", label: "无人机" },
+  { value: "sneaker", label: "球星签名鞋" },
 ] as const;
+
+export const SERVICE_HINTS = {
+  phone: "关注 AppleCare+、碎屏保、官方延保等增值服务",
+  drone: "关注 DJI 随心换、在保状态、电池循环次数",
+  sneaker: "关注原盒、防伪扣、购买凭证、未穿/全新吊牌",
+} as const;
+
+export const SERVICE_OPTIONS_BY_CATEGORY = {
+  phone: SERVICE_OPTIONS,
+  drone: SERVICE_OPTIONS,
+  sneaker: SERVICE_OPTIONS,
+} as const;

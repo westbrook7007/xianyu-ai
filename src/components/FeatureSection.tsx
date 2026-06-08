@@ -1,39 +1,39 @@
-import { Shield, Sparkles, TrendingDown, Clock } from "lucide-react";
+import { Shield, Zap, TrendingDown, Mail } from "lucide-react";
 
 const FEATURES = [
   {
     icon: Shield,
-    title: "避黄牛",
-    desc: "知识库规则引擎，自动识别个人卖家与黄牛商家",
+    title: "干掉黄牛信息差",
+    desc: "自动识别个人卖家与黄牛，过滤不靠谱货源，降低踩坑风险",
   },
   {
-    icon: Sparkles,
-    title: "AI个性化匹配",
-    desc: "根据成色、寿命、增值服务偏好智能评分排序",
+    icon: Zap,
+    title: "标品快速比价",
+    desc: "手机 / 无人机 / 球星签名鞋，15 分钟决策压缩到几分钟",
   },
   {
     icon: TrendingDown,
-    title: "价格监控",
-    desc: "7/30日价格波动可视化，识别好价与史低",
+    title: "低价好价提醒",
+    desc: "识别史低与好价区间，推送相对低价商品，辅助下单决策",
   },
   {
-    icon: Clock,
-    title: "定时任务",
-    desc: "每日自动爬取20-30条新品，低价自动提醒",
+    icon: Mail,
+    title: "双通道通知",
+    desc: "即时页面返回结果，或关闭页面后邮件异步通知",
   },
 ];
 
 export default function FeatureSection() {
   return (
-    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {FEATURES.map((f) => (
         <div
           key={f.title}
-          className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:shadow-md"
+          className="rounded-xl border border-orange-100 bg-white p-4 shadow-sm transition hover:shadow-md"
         >
-          <f.icon className="mb-3 h-8 w-8 text-brand-500" />
+          <f.icon className="mb-2 h-7 w-7 text-brand-500" />
           <h3 className="type-card-title">{f.title}</h3>
-          <p className="type-caption mt-1">{f.desc}</p>
+          <p className="type-caption mt-0.5 leading-snug">{f.desc}</p>
         </div>
       ))}
     </section>

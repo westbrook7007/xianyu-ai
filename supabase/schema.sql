@@ -113,3 +113,22 @@ CREATE POLICY "Public read trends" ON price_trend FOR SELECT USING (true);
 -- 允许 service role 写入（后端/爬虫使用 service key）
 CREATE POLICY "Service insert products" ON product_data FOR INSERT WITH CHECK (true);
 CREATE POLICY "Service insert trends" ON price_trend FOR INSERT WITH CHECK (true);
+
+-- 远程爬取任务队列（v7）
+CREATE TABLE IF NOT EXISTS crawl_queue (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id VARCHAR(100) NOT NULL,
+  keyword VARCHAR(255) NOT NULL,
+  preference JSONB,
+  notify_email VARCHAR(255),
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  item_count INT DEFAULT 0,
+  error_message TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  started_at TIMESTAMPTZ,
+  finished_at TIMESTAMPTZ,
+  worker_id VARCHAR(100)
+);
+
+CREATE INDEX IF NOT EXISTS idx_queue_status_created ON crawl_queue(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_queue_user ON crawl_queue(user_id);

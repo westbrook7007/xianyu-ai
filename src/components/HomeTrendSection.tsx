@@ -55,7 +55,7 @@ function TrendTable({
 }) {
   return (
     <section>
-      <h2 className="type-section-title mb-4 flex items-center gap-2">
+      <h2 className="type-section-title mb-2 flex items-center gap-2">
         <Icon className="h-5 w-5 text-brand-500" />
         {title}
       </h2>
@@ -121,14 +121,14 @@ export default function HomeTrendSection() {
   }, []);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       <TrendTable title="热门商品价格趋势" icon={Flame} items={hotItems} loading={hotLoading} />
       <TrendTable
         title="历史查询价格趋势"
         icon={History}
         items={historyItems}
         loading={histLoading}
-        emptyHint="搜索并选品后，这里会显示你查过的商品走势"
+        emptyHint="搜索并比价后，这里会显示你查过的商品走势"
       />
     </div>
   );

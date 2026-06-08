@@ -3,6 +3,7 @@ import type { Product, UserPreference } from "./types";
 
 const SERVICE_KEYWORDS = [
   "随心换", "碎屏保", "官方延保", "在保", "保修剩余", "Care", "AppleCare",
+  "原盒", "防伪扣", "购买凭证", "未穿", "全新吊牌",
 ];
 
 const QUALITY_RANK: Record<string, number> = {
@@ -66,7 +67,7 @@ export function detectLifeLevel(text: string, category: string): number {
   }
   if (/无拆无修|官方在保/.test(text)) score = Math.min(5, score + 1);
   const highWear = ["无人机", "游戏机", "switch", "ps5", "dji"];
-  if (highWear.some((k) => text.toLowerCase().includes(k)) && category === "digital") {
+  if (highWear.some((k) => text.toLowerCase().includes(k)) && (category === "phone" || category === "drone")) {
     score = Math.max(1, score - 0); // 高损耗设备已在 PRD 加权，此处保持基础评级
   }
   return Math.min(5, Math.max(1, Math.round(score)));
@@ -146,16 +147,19 @@ export function scoreProduct(
   if (pref.seller_preference === "excellent_only" && product.seller_level !== "优秀" && product.seller_level !== "极好") {
     sellerScore *= 0.5;
   }
+  if (product.seller_bad_reviews && product.seller_bad_reviews > 0) {
+    sellerScore *= Math.max(0.5, 1 - product.seller_bad_reviews * 0.08);
+  }
 
   // 寿命分
-  const lifeLevel = product.life_level || detectLifeLevel(desc, pref.category || "general");
+  const lifeLevel = product.life_level || detectLifeLevel(desc, pref.category || "phone");
   let lifeScore = (lifeLevel / 5) * w.life;
   if (pref.life_priority === "life_first") lifeScore = Math.min(w.life + 5, lifeScore * 1.15);
 
   let total = priceScore + qualityScore + sellerScore + lifeScore;
 
-  // 数码增值服务加分
-  if (pref.category === "digital" || pref.service_demand !== "not_needed") {
+  // 增值服务加分（按品类：手机/无人机/球鞋）
+  if (pref.service_demand !== "not_needed") {
     const svc = detectService(desc + (product.service || ""));
     if (svc.service) total += w.serviceBonus;
     if (svc.days > w.serviceLongDays) total += w.serviceLongBonus;

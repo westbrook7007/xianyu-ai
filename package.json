@@ -1,14 +1,16 @@
 {
   "name": "xianyu-ai",
-  "version": "6.6.0",
+  "version": "7.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:lan": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "verify": "node scripts/verify.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "setup:supabase": "node scripts/setup-supabase.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

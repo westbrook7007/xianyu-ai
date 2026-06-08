@@ -54,29 +54,29 @@ export async function sendCrawlResultEmail(
   let statusLine: string;
 
   if (result.status === "success" || result.status === "demo") {
-    subject = `【闲鱼AI】「${result.keyword}」爬取完成，共 ${result.itemCount} 条`;
+    subject = `【闲鱼比价助手】「${result.keyword}」查询完成，共 ${result.itemCount} 条`;
     statusLine = `爬取成功，共找到 <strong>${result.itemCount}</strong> 条商品。`;
   } else if (result.status === "empty") {
-    subject = `【闲鱼AI】「${result.keyword}」爬取完成，未找到商品`;
+    subject = `【闲鱼比价助手】「${result.keyword}」查询完成，未找到商品`;
     statusLine = "爬取已结束，但未找到商品。请确认闲鱼登录状态或更换关键词。";
   } else {
-    subject = `【闲鱼AI】「${result.keyword}」爬取失败`;
+    subject = `【闲鱼比价助手】「${result.keyword}」查询失败`;
     statusLine = `爬取失败：${escapeHtml(result.error || "未知错误")}`;
   }
 
   const html = `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1f2937;">
-    <h2 style="color:#ea580c;margin-bottom:8px;">闲鱼AI选品通知</h2>
+    <h2 style="color:#ea580c;margin-bottom:8px;">闲鱼比价助手通知</h2>
     <p>关键词：<strong>${escapeHtml(result.keyword)}</strong></p>
     <p>${statusLine}</p>
     ${result.products.length ? buildProductRows(result.products) : ""}
     <p style="margin-top:20px;">
-      <a href="${resultsUrl}" style="display:inline-block;background:#f97316;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;">查看完整选品结果</a>
+      <a href="${resultsUrl}" style="display:inline-block;background:#f97316;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;">查看完整比价结果</a>
     </p>
-    <p style="margin-top:24px;font-size:12px;color:#9ca3af;">此邮件由闲鱼AI选品工具自动发送，请勿直接回复。</p>
+    <p style="margin-top:24px;font-size:12px;color:#9ca3af;">此邮件由闲鱼比价助手自动发送，请勿直接回复。</p>
   </div>`;
 
   const text = [
-    `闲鱼AI选品 - ${result.keyword}`,
+    `闲鱼比价助手 - ${result.keyword}`,
     statusLine.replace(/<[^>]+>/g, ""),
     `查看结果: ${resultsUrl}`,
   ].join("\n");

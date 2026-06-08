@@ -136,14 +136,14 @@ export const MOCK_PREFERENCE: UserPreference = {
   max_price: 6500,
   accept_premium: true,
   seller_preference: "excellent_only",
-  category: "digital",
+  category: "phone",
   is_default: true,
 };
 
 export const HOT_KEYWORDS = [
   { keyword: "iPhone 15 Pro", avg_price: 6200, trend: -3.2 },
   { keyword: "DJI Mini 4 Pro", avg_price: 3200, trend: -5.1 },
-  { keyword: "Switch OLED", avg_price: 1580, trend: 1.2 },
-  { keyword: "MacBook Air M2", avg_price: 5400, trend: -2.8 },
-  { keyword: "PS5 光驱版", avg_price: 2100, trend: 0.5 },
+  { keyword: "KD 16", avg_price: 680, trend: -2.1 },
+  { keyword: "JA 1", avg_price: 520, trend: -4.5 },
+  { keyword: "DJI Air 3", avg_price: 4500, trend: -1.8 },
 ];

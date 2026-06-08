@@ -1,5 +1,6 @@
 import { CONFIG } from "@/lib/config";
 import { enrichProducts } from "@/lib/enrich-products";
+import { recordCrawlMetric } from "@/lib/crawl-metrics";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { MOCK_PRODUCTS } from "@/lib/mock-data";
 import type { Product, UserPreference } from "@/lib/types";
@@ -11,6 +12,7 @@ export type CrawlResult = {
   products: Product[];
   error?: string;
   message?: string;
+  durationMs?: number;
 };
 
 export async function executeCrawl(params: {
@@ -21,6 +23,19 @@ export async function executeCrawl(params: {
   isScheduled?: boolean;
 }): Promise<CrawlResult> {
   const { keyword, userId, preference, triggerType = "manual", isScheduled = false } = params;
+  const startedAt = Date.now();
+
+  function finish(result: CrawlResult): CrawlResult {
+    const durationMs = Date.now() - startedAt;
+    recordCrawlMetric({
+      keyword,
+      status: result.status,
+      durationMs,
+      itemCount: result.itemCount,
+      error: result.error,
+    });
+    return { ...result, durationMs };
+  }
 
   if (!process.env.CRAWLER_ENDPOINT) {
     const demoProducts = enrichProducts(
@@ -41,13 +56,13 @@ export async function executeCrawl(params: {
       });
     }
 
-    return {
+    return finish({
       status: "demo",
       keyword,
       itemCount: demoProducts.length,
       products: demoProducts,
       message: "演示模式已返回模拟数据",
-    };
+    });
   }
 
   try {
@@ -67,26 +82,26 @@ export async function executeCrawl(params: {
 
     if (!crawlerRes.ok) {
       const errText = await crawlerRes.text();
-      return {
+      return finish({
         status: "error",
         keyword,
         itemCount: 0,
         products: [],
         error: `爬虫执行失败: ${errText}`,
-      };
+      });
     }
 
     const crawlData = await crawlerRes.json();
     const rawProducts = crawlData.products || [];
 
     if (rawProducts.length === 0) {
-      return {
+      return finish({
         status: "empty",
         keyword,
         itemCount: 0,
         products: [],
         error: "爬取完成但未找到商品",
-      };
+      });
     }
 
     const products = enrichProducts(rawProducts, keyword, preference);
@@ -102,19 +117,19 @@ export async function executeCrawl(params: {
       });
     }
 
-    return {
+    return finish({
       status: "success",
       keyword,
       itemCount: products.length,
       products,
-    };
+    });
   } catch (e) {
-    return {
+    return finish({
       status: "error",
       keyword,
       itemCount: 0,
       products: [],
       error: e instanceof Error ? e.message : "未知错误",
-    };
+    });
   }
 }

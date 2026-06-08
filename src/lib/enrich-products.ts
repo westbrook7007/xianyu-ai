@@ -1,6 +1,22 @@
 import { scoreProduct, classifySeller, getPricePosition } from "@/lib/scoring";
 import { dedupeProducts } from "@/lib/dedupe-products";
+import { applyCategoryFilters, filterBaitPrices } from "@/lib/category-filters";
+import { matchSpec } from "@/lib/spec-catalog";
 import type { Product, UserPreference } from "@/lib/types";
+
+const INVALID_TITLE_KEYWORDS = [
+  "为你推荐", "猜你喜欢", "看了又看", "相似宝贝", "热门推荐", "相关推荐",
+];
+
+function sanitizeTitle(title: string, keyword: string, description?: string): string {
+  const t = (title || "").trim();
+  const bad = (s: string) =>
+    !s || s.length < 4 || INVALID_TITLE_KEYWORDS.some((k) => s.includes(k));
+  if (!bad(t)) return t;
+  const desc = (description || "").trim();
+  if (!bad(desc) && desc.length <= 120) return desc;
+  return keyword ? `${keyword} 相关商品` : t || "未知商品";
+}
 
 export function enrichProducts(
   rawProducts: Partial<Product>[],
@@ -14,11 +30,14 @@ export function enrichProducts(
   const avgPrice = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
   const minPrice = prices.length ? Math.min(...prices) : 0;
 
-  return unique.map((p) => {
+  const hintCategory = preference?.category;
+
+  const enriched = unique.map((p) => {
     const seller = classifySeller(p);
+    const spec = matchSpec(`${p.title || ""} ${keyword}`, hintCategory);
     const product: Product = {
       keyword,
-      title: p.title || "",
+      title: sanitizeTitle(p.title || "", keyword, p.description),
       price: p.price || 0,
       original_price: p.original_price,
       avg_price: avgPrice,
@@ -39,6 +58,10 @@ export function enrichProducts(
       publish_time: p.publish_time,
       product_url: p.product_url || "",
       price_position: "正常",
+      spec_label: spec.specLabel,
+      spec_matched: spec.matched,
+      seller_bad_reviews: p.seller_bad_reviews,
+      seller_review_note: p.seller_review_note,
     };
     if (preference) {
       product.ai_score = scoreProduct(product, preference, avgPrice);
@@ -46,4 +69,7 @@ export function enrichProducts(
     product.price_position = getPricePosition(product.price, avgPrice, minPrice);
     return product;
   });
+
+  const afterBait = filterBaitPrices(enriched, avgPrice);
+  return applyCategoryFilters(afterBait, keyword, preference);
 }

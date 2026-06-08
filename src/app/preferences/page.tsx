@@ -13,13 +13,15 @@ import {
   savePreferenceTemplate,
 } from "@/lib/user";
 import { addSearchKeyword } from "@/lib/search-history";
-import type { UserPreference } from "@/lib/types";
+import type { Category, UserPreference } from "@/lib/types";
 
 function PreferencesContent() {
   const searchParams = useSearchParams();
   const keyword = searchParams.get("keyword") || sessionStorage.getItem("search_keyword") || "";
+  const categoryParam = (searchParams.get("category") || sessionStorage.getItem("search_category") || "") as Category | "";
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [queueJobId, setQueueJobId] = useState<string | null>(null);
   const [initial, setInitial] = useState<Partial<UserPreference>>({});
   const [notify, setNotify] = useState(loadNotifySettings());
   const [emailConfigured, setEmailConfigured] = useState<boolean | undefined>();
@@ -80,25 +82,35 @@ function PreferencesContent() {
           crawlData.error ||
             "爬取失败。若刚登录闲鱼，请确认已用「登录闲鱼.bat」扫码登录，然后重试。"
         );
+        setLoading(false);
         return;
       }
 
       addSearchKeyword(keyword);
 
-      // 后台模式：立即提示并返回首页
-      if (crawlData.status === "queued") {
+      // 邮件后台模式（本机直连爬虫）
+      if (crawlData.status === "queued" && background && !crawlData.jobId) {
         alert(
           `爬取已在后台进行。\n完成后将发送邮件至：${notify.email.trim()}\n您可以关闭此页面，稍后在邮件中查看结果。`
         );
+        setLoading(false);
         router.push("/");
+        return;
+      }
+
+      // 远程队列模式：轮询任务状态
+      if (crawlData.status === "queued" && crawlData.jobId) {
+        setQueueJobId(crawlData.jobId);
         return;
       }
 
       const products = crawlData.products || [];
       if (products.length === 0) {
-        alert(
-          "爬取完成但没有找到商品。\n可能原因：关键词太偏、尚未登录闲鱼、或页面结构变化。\n建议：先运行「登录闲鱼.bat」扫码登录，再换常见关键词重试。"
-        );
+        sessionStorage.setItem("last_products", "[]");
+        sessionStorage.setItem("last_keyword", keyword);
+        sessionStorage.setItem("last_crawl_status", crawlData.status || "empty");
+        setLoading(false);
+        router.push(`/results?keyword=${encodeURIComponent(keyword)}`);
         return;
       }
 
@@ -110,12 +122,28 @@ function PreferencesContent() {
         alert(`爬取成功，但邮件发送失败：${crawlData.emailError || "请检查 SMTP 配置"}`);
       }
 
+      setLoading(false);
       router.push(`/results?keyword=${encodeURIComponent(keyword)}`);
     } catch {
       alert("爬取失败，请重试");
-    } finally {
       setLoading(false);
+      setQueueJobId(null);
     }
+  }
+
+  function handleQueueComplete(kw: string) {
+    setLoading(false);
+    setQueueJobId(null);
+    sessionStorage.removeItem("last_products");
+    sessionStorage.setItem("last_keyword", kw);
+    sessionStorage.setItem("last_crawl_status", "success");
+    router.push(`/results?keyword=${encodeURIComponent(kw)}`);
+  }
+
+  function handleQueueFailed(error: string) {
+    setLoading(false);
+    setQueueJobId(null);
+    alert(error || "远程爬取失败，请确认运营者电脑已运行爬虫与 Worker");
   }
 
   if (!keyword) {
@@ -126,11 +154,18 @@ function PreferencesContent() {
     );
   }
 
-  const showProgress = loading && !(notify.enabled && notify.backgroundNotify);
+  const showProgress =
+    (loading && !(notify.enabled && notify.backgroundNotify)) || !!queueJobId;
 
   return (
     <>
-      <CrawlProgress keyword={keyword} active={showProgress} />
+      <CrawlProgress
+        keyword={keyword}
+        active={showProgress}
+        jobId={queueJobId || undefined}
+        onComplete={handleQueueComplete}
+        onFailed={handleQueueFailed}
+      />
       <div className="mx-auto max-w-2xl">
         <NotifySettingsCard
           settings={notify}
@@ -139,6 +174,7 @@ function PreferencesContent() {
         />
         <PreferenceForm
           keyword={keyword}
+          defaultCategory={categoryParam || undefined}
           initial={{ ...initial, user_id: getUserId() }}
           onSubmit={handleSubmit}
           loading={loading}

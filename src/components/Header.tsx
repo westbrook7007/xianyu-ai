@@ -7,8 +7,8 @@ import clsx from "clsx";
 
 const NAV = [
   { href: "/", label: "首页" },
-  { href: "/preferences", label: "偏好设置" },
-  { href: "/results", label: "选品结果" },
+  { href: "/preferences", label: "比价设置" },
+  { href: "/results", label: "比价结果" },
   { href: "/profile", label: "个人中心" },
 ];
 
@@ -20,7 +20,7 @@ export default function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 font-bold text-brand-600">
           <Fish className="h-7 w-7" />
-          <span>闲鱼AI选品</span>
+          <span>闲鱼比价助手</span>
         </Link>
         <nav className="hidden gap-1 md:flex">
           {NAV.map((item) => (
