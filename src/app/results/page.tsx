@@ -93,7 +93,7 @@ function ResultsContent() {
 
   if (isEmpty) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="flex min-h-[30vh] items-center justify-center">
         <p className="type-page-title text-center text-gray-600">
           小助手没有找到你想要的宝贝
         </p>
@@ -102,49 +102,51 @@ function ResultsContent() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="type-page-title">比价结果</h1>
-          <p className="type-subtitle">
-            关键词: {kw || "—"}
-            {products.length > 0 && (
-              <span className="ml-2 text-gray-400">共 {products.length} 条</span>
-            )}
-            {demo && <span className="type-badge ml-2 rounded bg-amber-100 px-2 py-0.5 text-amber-700">演示数据</span>}
-          </p>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <h1 className="text-lg font-bold text-gray-900">比价结果</h1>
+          <span className="text-sm text-gray-500">
+            {kw || "—"}
+            {products.length > 0 && <span className="text-gray-400"> · {products.length} 条</span>}
+          </span>
+          {demo && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-700">演示</span>}
         </div>
         {kw && (
-          <Link href={`/trend/${encodeURIComponent(kw)}`} className="type-body text-brand-600 hover:underline">
-            查看价格走势 →
+          <Link href={`/trend/${encodeURIComponent(kw)}`} className="text-sm text-brand-600 hover:underline">
+            价格走势 →
           </Link>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-3 rounded-xl border border-orange-100 bg-white p-4">
-        <select value={sort} onChange={(e) => setSort(e.target.value as SortMode)} className="type-input rounded-lg border border-gray-200 px-3 py-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-orange-100 bg-white px-3 py-2 text-sm">
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortMode)}
+          className="rounded border border-gray-200 px-2 py-1 text-sm"
+        >
           {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>排序: {o.label}</option>
           ))}
         </select>
-        <label className="type-body flex items-center gap-2">
+        <label className="flex items-center gap-1.5 text-gray-600">
           <input type="checkbox" checked={hideFiltered} onChange={(e) => setHideFiltered(e.target.checked)} />
-          隐藏已过滤黄牛
+          隐藏黄牛
         </label>
-        <label className="type-body flex items-center gap-2">
+        <label className="flex items-center gap-1.5 text-gray-600">
           <input type="checkbox" checked={personalOnly} onChange={(e) => setPersonalOnly(e.target.checked)} />
-          仅个人卖家
+          仅个人
         </label>
-        <label className="type-body flex items-center gap-2">
+        <label className="flex items-center gap-1.5 text-gray-600">
           <input type="checkbox" checked={withService} onChange={(e) => setWithService(e.target.checked)} />
-          带增值服务
+          带服务
         </label>
       </div>
 
       {loading ? (
-        <div className="type-caption py-12 text-center">加载中...</div>
+        <div className="py-6 text-center text-sm text-gray-400">加载中...</div>
       ) : (
-        <div className="grid items-stretch gap-4 md:grid-cols-2">
+        <div className="grid items-stretch gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((p, i) => (
             <ProductCard key={productKey(p, i)} product={p} />
           ))}

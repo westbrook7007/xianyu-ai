@@ -1,8 +1,8 @@
 # 爬虫配置 - 可自定义
 crawl:
-  min_items: 20
-  max_items: 30
-  interval_seconds: 30
+  min_items: 5
+  max_items: 10
+  interval_seconds: 15
   search_url: "https://www.goofish.com/search?q={keyword}&sort=new"
 
 browser:
