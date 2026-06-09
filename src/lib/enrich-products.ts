@@ -12,10 +12,10 @@ function sanitizeTitle(title: string, keyword: string, description?: string): st
   const t = (title || "").trim();
   const bad = (s: string) =>
     !s || s.length < 4 || INVALID_TITLE_KEYWORDS.some((k) => s.includes(k));
-  if (!bad(t)) return t;
+  if (!bad(t)) return t.slice(0, 500);
   const desc = (description || "").trim();
-  if (!bad(desc) && desc.length <= 120) return desc;
-  return keyword ? `${keyword} 相关商品` : t || "未知商品";
+  if (!bad(desc)) return desc.slice(0, 500);
+  return keyword ? `${keyword} 相关商品` : (t || "未知商品").slice(0, 500);
 }
 
 export function enrichProducts(

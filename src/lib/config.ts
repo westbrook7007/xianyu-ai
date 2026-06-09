@@ -5,7 +5,7 @@ export const CONFIG = {
     minItems: parseInt(process.env.CRAWL_MIN_ITEMS || "20", 10),
     maxItems: parseInt(process.env.CRAWL_MAX_ITEMS || "30", 10),
     intervalSeconds: parseInt(process.env.CRAWL_INTERVAL_SECONDS || "30", 10),
-    maxManualPerDay: 3,
+    maxManualPerDay: parseInt(process.env.CRAWL_MAX_MANUAL_PER_DAY || "10", 10),
     maxScheduledPerDay: 1,
   },
   scoring: {

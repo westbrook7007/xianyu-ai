@@ -2,19 +2,30 @@ import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { scoreProduct, classifySeller, getPricePosition } from "@/lib/scoring";
 import type { Product, UserPreference } from "@/lib/types";
 
+/** 与 supabase/schema.sql 列宽一致，防止 varchar 超长写入失败 */
+function clip(value: string | null | undefined, max: number): string | null {
+  if (value == null || value === "") return null;
+  const s = String(value);
+  return s.length <= max ? s : s.slice(0, max);
+}
+
+function clipRequired(value: string | null | undefined, max: number, fallback: string): string {
+  return clip(value, max) || fallback;
+}
+
 /** 与 supabase/schema.sql 中 product_data 列一致，避免写入 UI 专用字段导致 upsert 失败 */
 function toProductRow(p: Product) {
   return {
-    keyword: p.keyword,
-    title: p.title,
+    keyword: clipRequired(p.keyword, 255, "unknown"),
+    title: clipRequired(p.title, 500, "未知商品"),
     price: p.price,
     original_price: p.original_price ?? null,
     avg_price: p.avg_price ?? null,
-    quality: p.quality ?? null,
-    service: p.service ?? null,
+    quality: clip(p.quality, 100),
+    service: clip(p.service, 255),
     service_day: p.service_day ?? 0,
-    seller_id: p.seller_id ?? null,
-    seller_level: p.seller_level ?? null,
+    seller_id: clip(p.seller_id, 100),
+    seller_level: clip(p.seller_level, 50),
     seller_bio: p.seller_bio ?? null,
     seller_item_count: p.seller_item_count ?? 0,
     seller_type: p.seller_type,
@@ -23,9 +34,9 @@ function toProductRow(p: Product) {
     flaw_desc: p.flaw_desc ?? null,
     description: p.description ?? null,
     publish_time: p.publish_time ?? null,
-    product_url: p.product_url,
+    product_url: clipRequired(p.product_url, 1000, ""),
     is_filtered: p.is_filtered ?? false,
-    price_position: p.price_position ?? null,
+    price_position: clip(p.price_position, 20),
   };
 }
 

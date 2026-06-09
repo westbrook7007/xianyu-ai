@@ -113,19 +113,24 @@ def run_crawl(crawler_url: str, secret: str, keyword: str, config: dict):
     return data.get("products") or []
 
 
+def _clip(value, max_len: int, fallback: str = "") -> str:
+    s = str(value or fallback)
+    return s[:max_len] if len(s) > max_len else s
+
+
 def to_product_row(p: dict, keyword: str, avg_price: float) -> dict:
     price = float(p.get("price") or 0)
     return {
-        "keyword": keyword,
-        "title": (p.get("title") or "")[:500],
+        "keyword": _clip(keyword, 255, "unknown"),
+        "title": _clip(p.get("title"), 500, "未知商品"),
         "price": price,
         "original_price": p.get("original_price"),
         "avg_price": avg_price,
-        "quality": p.get("quality"),
-        "service": p.get("service"),
+        "quality": _clip(p.get("quality"), 100) or None,
+        "service": _clip(p.get("service"), 255) or None,
         "service_day": int(p.get("service_day") or 0),
-        "seller_id": p.get("seller_id"),
-        "seller_level": p.get("seller_level"),
+        "seller_id": _clip(p.get("seller_id"), 100) or None,
+        "seller_level": _clip(p.get("seller_level"), 50) or None,
         "seller_bio": p.get("seller_bio"),
         "seller_item_count": int(p.get("seller_item_count") or 0),
         "seller_type": int(p.get("seller_type") or 1),
@@ -134,9 +139,9 @@ def to_product_row(p: dict, keyword: str, avg_price: float) -> dict:
         "flaw_desc": p.get("flaw_desc"),
         "description": p.get("description"),
         "publish_time": p.get("publish_time"),
-        "product_url": p.get("product_url") or "",
+        "product_url": _clip(p.get("product_url"), 1000),
         "is_filtered": bool(p.get("is_filtered", False)),
-        "price_position": p.get("price_position") or "正常",
+        "price_position": _clip(p.get("price_position"), 20, "正常"),
     }
 
 
